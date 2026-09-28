@@ -196,7 +196,7 @@ const shell = `<!DOCTYPE html>
 <meta property="og:title" content="PowerBee &mdash; Investor Deck">
 <meta property="og:description" content="Confidential investor presentation. A password is required to view it.">
 <meta property="og:url" content="${SITE_URL}/">
-<meta property="og:image" content="${SITE_URL}/assets/og.png">
+<meta property="og:image" content="${SITE_URL}/assets/og.png?v=2">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -204,7 +204,7 @@ const shell = `<!DOCTYPE html>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PowerBee &mdash; Investor Deck">
 <meta name="twitter:description" content="Confidential investor presentation. A password is required to view it.">
-<meta name="twitter:image" content="${SITE_URL}/assets/og.png">
+<meta name="twitter:image" content="${SITE_URL}/assets/og.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">

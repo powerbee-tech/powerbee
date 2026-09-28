@@ -3,9 +3,9 @@
   Source for assets/og.png — the link-preview card.
   Render at exactly 1200x630 and screenshot it, then save over assets/og.png.
 
-  Carries the company name and nothing else: the hostname already reveals it,
-  but previews are fetched by third-party servers and shown to anyone holding
-  the link, so no figures, patents or technical claims belong here.
+  Same lockup as the title slide and the gate: interlocking rings + PowerBee
+  wordmark. Previews are fetched by third-party servers, so no figures, patents
+  or technical claims belong here.
 -->
 <html lang="en">
 <head>
@@ -13,17 +13,16 @@
 <title>OG card</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --black:   #0B0D0F;
-  --slate:   #4C5A66;
-  --white:   #F7FFFF;
-  --gray:    #AABBBD;
-  --red:     #FF073A;
-  --red-3:   #A60525;
+  --black: #000000;
+  --slate: #4C5A66;
+  --white: #F7FFFF;
+  --gray:  #AABBBD;
+  --red:   #FF073A;
 }
 
 body {
@@ -39,175 +38,95 @@ body {
   position: relative;
   width: 1200px;
   height: 630px;
-  padding: 88px 96px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   overflow: hidden;
 }
 
-/* Neon red glows */
 .card::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(52% 58% at 96% -8%, rgba(255, 7, 58, .30), transparent 68%),
-    radial-gradient(42% 48% at -6% 106%, rgba(166, 5, 37, .30), transparent 68%);
+    radial-gradient(52% 42% at 92% -6%, rgba(255, 7, 58, .10), transparent 68%),
+    radial-gradient(44% 38% at -4% 104%, rgba(166, 5, 37, .11), transparent 70%);
 }
 
-/* Angular facet, echoing the identity's geometry */
-.facet {
-  position: absolute;
-  top: -120px;
-  right: -140px;
-  width: 720px;
-  height: 720px;
-  background: linear-gradient(135deg, rgba(255, 7, 58, .10), rgba(166, 5, 37, .015) 62%, transparent);
-  clip-path: polygon(38% 0, 100% 0, 100% 74%, 74% 100%, 0 46%);
-}
-
-.facet-2 {
-  position: absolute;
-  bottom: -190px;
-  left: -150px;
-  width: 560px;
-  height: 560px;
-  background: linear-gradient(315deg, rgba(255, 7, 58, .055), transparent 58%);
-  clip-path: polygon(0 28%, 56% 0, 100% 52%, 62% 100%, 0 100%);
-}
-
-/* Corner brackets */
 .corner {
   position: absolute;
-  width: 46px;
-  height: 46px;
+  width: 22px;
+  height: 22px;
   border-style: solid;
   border-color: var(--red);
-  border-width: 0;
+  z-index: 3;
+}
+.corner.tl { top: 36px; left: 36px; border-width: 2px 0 0 2px; }
+.corner.br { bottom: 36px; right: 36px; border-width: 0 2px 2px 0; }
+
+.lockup {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.corner.tl { top: 34px;    left: 34px;  border-top-width: 2px;    border-left-width: 2px; }
-.corner.tr { top: 34px;    right: 34px; border-top-width: 2px;    border-right-width: 2px; }
-.corner.bl { bottom: 34px; left: 34px;  border-bottom-width: 2px; border-left-width: 2px; }
-.corner.br { bottom: 34px; right: 34px; border-bottom-width: 2px; border-right-width: 2px; }
+.wordmark {
+  display: block;
+  width: 760px;
+  height: auto;
+}
 
-.inner { position: relative; z-index: 2; }
+.tag {
+  margin-top: 28px;
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: .08em;
+  color: rgba(246, 248, 250, .62);
+}
 
-/* Eyebrow */
-.eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: .44em;
+.meta {
+  margin-top: 36px;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: .28em;
   text-transform: uppercase;
   color: var(--slate);
-  margin-bottom: 34px;
 }
 
-.eyebrow::before {
-  content: "";
-  width: 0; height: 0;
-  border-left: 13px solid var(--red);
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  flex: none;
-}
-
-h1 {
-  font-size: 108px;
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: .01em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-
-.sub {
-  margin-top: 26px;
-  font-size: 26px;
-  font-weight: 400;
-  letter-spacing: .04em;
-  color: var(--gray);
-}
-
-.bracket {
-  margin-top: 40px;
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-
-.bracket .b { color: var(--red); }
-
-/* Footer row */
 .foot {
   position: absolute;
-  left: 96px;
-  right: 96px;
-  bottom: 82px;
+  left: 48px;
+  right: 48px;
+  bottom: 38px;
   z-index: 2;
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: .3em;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--slate);
-}
-
-.rule {
-  position: absolute;
-  left: 96px;
-  right: 96px;
-  bottom: 136px;
-  z-index: 2;
-  height: 1px;
-  background: linear-gradient(90deg, var(--red), rgba(76, 90, 102, .34) 42%, transparent);
-}
-
-.lock {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  color: var(--gray);
 }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <div class="facet"></div>
-  <div class="facet-2"></div>
-
   <span class="corner tl"></span>
-  <span class="corner tr"></span>
-  <span class="corner bl"></span>
   <span class="corner br"></span>
 
-  <div class="inner">
-    <div class="eyebrow">Confidential</div>
-    <h1>PowerBee</h1>
-    <p class="sub">Investor deck</p>
-    <div class="bracket"><span class="b">[</span> Shared by invitation only <span class="b">]</span></div>
+  <div class="lockup">
+    <img class="wordmark" src="assets/wordmark.png" alt="PowerBee">
+    <p class="tag">Ultra efficient energy generation</p>
+    <p class="meta">Investor deck · Confidential</p>
   </div>
-
-  <div class="rule"></div>
 
   <div class="foot">
     <span>PowerBee P.S.A.</span>
-    <span class="lock">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FF073A" stroke-width="2.2" stroke-linecap="round">
-        <rect x="4" y="11" width="16" height="10"/>
-        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-      </svg>
-      Password required
-    </span>
+    <span>Invitation only</span>
   </div>
 </div>
 
