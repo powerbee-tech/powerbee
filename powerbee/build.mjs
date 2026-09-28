@@ -422,30 +422,50 @@ footer {
   display: grid;
   place-items: center;
 }
+.veil .rings {
+  position: relative;
+  width: 80px;
+  height: 40px;
+  transform: scale(0);
+}
 .veil i {
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--red);
-  background: var(--black);
-  transform: rotate(45deg) scale(0);
-  box-shadow: 0 0 0 0 rgba(255, 7, 58, 0);
+  position: absolute;
+  top: 6px;
+  left: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.4px solid #F7FFFF;
+  background: transparent;
+}
+.veil i + i {
+  left: 38px;
+  border-color: var(--red);
 }
 
 body.is-opening .gate,
 body.is-opening footer,
 body.is-opening .corner { opacity: 0; transform: translate3d(0, -10px, 0); }
+body.is-opening .veil .rings {
+  animation: open-rings .92s cubic-bezier(.22, .68, .2, 1) forwards;
+}
 body.is-opening .veil i {
-  animation: open-turn .92s cubic-bezier(.22, .68, .2, 1) forwards;
+  animation: open-fill .92s cubic-bezier(.22, .68, .2, 1) forwards;
 }
 
-@keyframes open-turn {
-  0%   { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 0 rgba(255, 7, 58, .0); }
-  28%  { transform: rotate(135deg) scale(6); box-shadow: 0 0 0 18px rgba(255, 7, 58, .08); }
-  100% { transform: rotate(405deg) scale(280); box-shadow: 0 0 0 0 rgba(255, 7, 58, 0); background: #000; }
+@keyframes open-rings {
+  0%   { transform: rotate(0deg) scale(1); }
+  32%  { transform: rotate(130deg) scale(4.6); }
+  100% { transform: rotate(390deg) scale(86); }
+}
+@keyframes open-fill {
+  0%, 36% { background: transparent; }
+  100% { background: #000; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.is-busy .mark,
+  body.is-opening .veil .rings,
   body.is-opening .veil i { animation: none; }
   .gate, footer, .corner { transition: none; }
 }
@@ -476,7 +496,7 @@ body.is-opening .veil i {
 </div>
 
 <footer>PowerBee P.S.A. &middot; Do not forward</footer>
-<div class="veil" aria-hidden="true"><i></i></div>
+<div class="veil" aria-hidden="true"><span class="rings"><i></i><i></i></span></div>
 
 <script>
 const PAYLOAD = {
