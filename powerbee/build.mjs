@@ -171,10 +171,10 @@ const shell = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PowerBee &mdash; Investor Deck</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0B0D0F">
+<meta name="theme-color" content="#000000">
 <link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
@@ -195,15 +195,14 @@ const shell = `<!DOCTYPE html>
 <meta name="twitter:image" content="${SITE_URL}/assets/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 :root {
-  --black:   #0B0D0F;
-  --black-2: #131619;
+  --black:   #000000;
   --slate:   #4C5A66;
   --white:   #F7FFFF;
   --white-2: #E6F5F5;
@@ -214,16 +213,21 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   --line-soft: rgba(76, 90, 102, .18);
 }
 
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
 body {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: max(28px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
   background: var(--black);
   color: var(--white-2);
   font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 body::before {
@@ -232,111 +236,152 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(55% 40% at 85% -5%, rgba(255, 7, 58, .12), transparent 70%),
-    radial-gradient(45% 35% at -5% 100%, rgba(166, 5, 37, .14), transparent 70%);
+    radial-gradient(52% 42% at 92% -6%, rgba(255, 7, 58, .08), transparent 68%),
+    radial-gradient(44% 38% at -4% 104%, rgba(166, 5, 37, .09), transparent 70%);
 }
+
+.corner {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  border-style: solid;
+  border-color: var(--red);
+  z-index: 4;
+  pointer-events: none;
+}
+.corner.tl { top: max(22px, env(safe-area-inset-top)); left: max(22px, env(safe-area-inset-left)); border-width: 2px 0 0 2px; }
+.corner.br { bottom: max(22px, env(safe-area-inset-bottom)); right: max(22px, env(safe-area-inset-right)); border-width: 0 2px 2px 0; }
 
 .gate {
   position: relative;
+  z-index: 2;
   width: 100%;
-  max-width: 410px;
-  background: linear-gradient(180deg, var(--black-2), rgba(19, 22, 25, .5));
-  border: 1px solid var(--line-soft);
-  padding: 38px 36px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: opacity .55s cubic-bezier(.22, .7, .2, 1), transform .55s cubic-bezier(.22, .7, .2, 1);
 }
 
-.gate::before,
-.gate::after {
-  content: "";
-  position: absolute;
-  width: 16px; height: 16px;
-  border-style: solid;
-  border-color: var(--red);
+.mark {
+  width: 72px;
+  height: 36px;
+  margin-bottom: 28px;
 }
-
-.gate::before { top: -1px;    left: -1px;  border-width: 1px 0 0 1px; }
-.gate::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+.mark circle {
+  fill: none;
+  stroke-width: 3.2;
+  transform-origin: center;
+}
+body.is-busy .mark { animation: mark-turn 1.8s linear infinite; }
+@keyframes mark-turn { to { transform: rotate(360deg); } }
 
 .eyebrow {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  font-size: .6rem;
+  font-size: .58rem;
   font-weight: 600;
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--slate);
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
-
 .eyebrow::before {
   content: "";
   width: 0; height: 0;
   border-left: 5px solid var(--red);
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  flex: none;
+}
+
+.word {
+  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.15rem);
+  font-weight: 400;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+}
+.word span { color: var(--red); }
+
+.tag {
+  margin: 14px 0 0;
+  font-size: .72rem;
+  font-weight: 300;
+  letter-spacing: .08em;
+  color: rgba(246, 248, 250, .62);
 }
 
 h1 {
-  font-size: 1.16rem;
+  margin-top: 28px;
+  font-size: .68rem;
   font-weight: 400;
-  letter-spacing: .06em;
+  letter-spacing: .28em;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--slate);
 }
 
 .hint {
-  margin-top: 14px;
-  font-size: .83rem;
-  line-height: 1.75;
+  margin-top: 12px;
+  max-width: 36ch;
+  font-size: .84rem;
+  font-weight: 300;
+  line-height: 1.7;
   color: var(--gray);
 }
 
-form { margin-top: 26px; display: grid; gap: 12px; }
+form {
+  width: 100%;
+  margin-top: 32px;
+  display: grid;
+  gap: 12px;
+}
 
 input {
   width: 100%;
+  min-height: 48px;
   font: inherit;
-  font-size: .9rem;
-  letter-spacing: .1em;
+  font-size: .92rem;
+  letter-spacing: .12em;
   color: var(--white);
-  background: rgba(11, 13, 15, .7);
-  border: 1px solid var(--line);
-  padding: 13px 15px;
-  transition: border-color .16s, box-shadow .16s;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 14px 8px 12px;
+  transition: border-color .16s;
 }
 
-input::placeholder { color: var(--slate); letter-spacing: .18em; text-transform: uppercase; font-size: .74rem; }
+input::placeholder { color: var(--slate); letter-spacing: .22em; text-transform: uppercase; font-size: .68rem; }
 
-input:focus {
-  outline: none;
-  border-color: var(--red);
-  box-shadow: 0 0 0 2px rgba(255, 7, 58, .16);
-}
+input:focus { border-bottom-color: var(--red); }
 
 button {
+  min-height: 48px;
   font: inherit;
-  font-size: .72rem;
+  font-size: .68rem;
   font-weight: 600;
-  letter-spacing: .24em;
+  letter-spacing: .28em;
   text-transform: uppercase;
   color: var(--white);
-  background: var(--red-3);
+  background: transparent;
   border: 1px solid var(--red);
   padding: 13px 16px;
   cursor: pointer;
-  transition: background .16s;
+  transition: background .16s, color .16s;
 }
 
 button:hover { background: var(--red); }
-button:disabled { opacity: .5; cursor: default; }
+button:disabled { opacity: .45; cursor: default; }
 
 .msg {
   min-height: 1.3em;
-  font-size: .72rem;
+  font-size: .66rem;
   font-weight: 600;
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--red);
 }
@@ -344,32 +389,82 @@ button:disabled { opacity: .5; cursor: default; }
 .msg[data-busy] { color: var(--slate); }
 
 footer {
-  margin-top: 26px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line-soft);
-  font-size: .68rem;
-  line-height: 1.8;
-  letter-spacing: .02em;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 3;
+  font-size: .58rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--slate);
+  text-align: center;
+  pointer-events: none;
+}
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.veil i {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--red);
+  background: var(--black);
+  transform: rotate(45deg) scale(0);
+  box-shadow: 0 0 0 0 rgba(255, 7, 58, 0);
+}
+
+body.is-opening .gate,
+body.is-opening footer,
+body.is-opening .corner { opacity: 0; transform: translate3d(0, -10px, 0); }
+body.is-opening .veil i {
+  animation: open-turn .92s cubic-bezier(.22, .68, .2, 1) forwards;
+}
+
+@keyframes open-turn {
+  0%   { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 0 rgba(255, 7, 58, .0); }
+  28%  { transform: rotate(135deg) scale(6); box-shadow: 0 0 0 18px rgba(255, 7, 58, .08); }
+  100% { transform: rotate(405deg) scale(280); box-shadow: 0 0 0 0 rgba(255, 7, 58, 0); background: #000; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.is-busy .mark,
+  body.is-opening .veil i { animation: none; }
+  .gate, footer, .corner { transition: none; }
 }
 </style>
 </head>
 <body>
 
-<div class="gate">
-  <div class="eyebrow">Confidential</div>
+<span class="corner tl"></span>
+<span class="corner br"></span>
 
+<div class="gate">
+  <svg class="mark" viewBox="0 0 80 40" aria-hidden="true">
+    <circle cx="28" cy="20" r="13.5" stroke="#F7FFFF"/>
+    <circle cx="52" cy="20" r="13.5" stroke="#FF073A"/>
+  </svg>
+
+  <div class="eyebrow">Confidential</div>
+  <p class="word">Power<span>Bee</span></p>
+  <p class="tag">Ultra efficient energy generation</p>
   <h1>Investor deck</h1>
-  <p class="hint">This presentation is confidential and shared by invitation only. Enter the password to continue.</p>
+  <p class="hint">Shared by invitation only. Enter the password to continue.</p>
 
   <form id="f">
     <input id="p" type="password" placeholder="Password" autocomplete="current-password" autofocus required>
-    <button id="b" type="submit">Unlock</button>
+    <button id="b" type="submit">Enter</button>
     <p class="msg" id="m" role="status" aria-live="polite"></p>
   </form>
-
-  <footer>PowerBee P.S.A. &middot; All rights reserved. Do not forward or duplicate without consent.</footer>
 </div>
+
+<footer>PowerBee P.S.A. &middot; Do not forward</footer>
+<div class="veil" aria-hidden="true"><i></i></div>
 
 <script>
 const PAYLOAD = {
@@ -405,14 +500,16 @@ async function unlock(password) {
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   button.disabled = true;
+  document.body.classList.add('is-busy');
   msg.dataset.busy = '';
-  msg.textContent = 'Decrypting\\u2026';
+  msg.textContent = 'Opening\\u2026';
 
   try {
     const html = await unlock(input.value);
     sessionStorage.setItem('unlocked', input.value);
-    render(html);
+    await render(html);
   } catch {
+    document.body.classList.remove('is-busy');
     delete msg.dataset.busy;
     msg.textContent = 'Wrong password.';
     button.disabled = false;
@@ -420,7 +517,17 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
-function render(html) {
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function render(html, instant) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!instant && !reduce) {
+    document.body.classList.remove('is-busy');
+    document.body.classList.add('is-opening');
+    await wait(920);
+  }
   document.open();
   document.write(html);
   document.close();
@@ -479,7 +586,7 @@ function containWideTables() {
 // Stay unlocked while the tab is open.
 const remembered = sessionStorage.getItem('unlocked');
 if (remembered) {
-  unlock(remembered).then(render).catch(() => sessionStorage.removeItem('unlocked'));
+  unlock(remembered).then((html) => render(html, true)).catch(() => sessionStorage.removeItem('unlocked'));
 }
 </script>
 
