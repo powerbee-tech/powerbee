@@ -268,7 +268,7 @@ body::before {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -276,78 +276,37 @@ body::before {
   transition: opacity .55s cubic-bezier(.22, .7, .2, 1), transform .55s cubic-bezier(.22, .7, .2, 1);
 }
 
-.mark {
-  width: 72px;
-  height: 36px;
-  margin-bottom: 28px;
+.wordmark {
+  display: block;
+  width: min(440px, 84vw);
+  height: auto;
+  margin: 0 0 40px;
 }
-.mark circle {
-  fill: none;
-  stroke-width: 3.2;
-  transform-origin: center;
-}
-body.is-busy .mark { animation: mark-turn 1.8s linear infinite; }
-@keyframes mark-turn { to { transform: rotate(360deg); } }
-
-.eyebrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: .58rem;
-  font-weight: 600;
-  letter-spacing: .3em;
-  text-transform: uppercase;
-  color: var(--slate);
-  margin-bottom: 16px;
-}
-.eyebrow::before {
-  content: "";
-  width: 0; height: 0;
-  border-left: 5px solid var(--red);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-}
-
-.word {
-  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.15rem);
-  font-weight: 400;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  color: var(--white);
-  line-height: 1;
-}
-.word span { color: var(--red); }
-
-.tag {
-  margin: 14px 0 0;
-  font-size: .72rem;
-  font-weight: 300;
-  letter-spacing: .08em;
-  color: rgba(246, 248, 250, .62);
-}
+body.is-busy .wordmark { animation: mark-pulse 1.4s ease-in-out infinite; }
+@keyframes mark-pulse { 50% { opacity: .4; } }
 
 h1 {
-  margin-top: 28px;
-  font-size: .68rem;
+  margin: 0;
+  font-size: .62rem;
   font-weight: 400;
-  letter-spacing: .28em;
+  letter-spacing: .32em;
   text-transform: uppercase;
   color: var(--slate);
 }
 
 .hint {
-  margin-top: 12px;
-  max-width: 36ch;
-  font-size: .84rem;
+  margin-top: 16px;
+  font-size: clamp(.62rem, .48rem + .5vw, .76rem);
   font-weight: 300;
-  line-height: 1.7;
+  letter-spacing: .035em;
+  line-height: 1.35;
   color: var(--gray);
+  white-space: nowrap;
 }
 
 form {
-  width: 100%;
-  margin-top: 32px;
+  width: min(300px, 100%);
+  margin-top: 40px;
   display: grid;
   gap: 12px;
 }
@@ -464,7 +423,7 @@ body.is-opening .veil i {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.is-busy .mark,
+  body.is-busy .wordmark,
   body.is-opening .veil .rings,
   body.is-opening .veil i { animation: none; }
   .gate, footer, .corner { transition: none; }
@@ -477,15 +436,8 @@ body.is-opening .veil i {
 <span class="corner br"></span>
 
 <div class="gate">
-  <svg class="mark" viewBox="0 0 80 40" aria-hidden="true">
-    <circle cx="28" cy="20" r="13.5" stroke="#F7FFFF"/>
-    <circle cx="52" cy="20" r="13.5" stroke="#FF073A"/>
-  </svg>
-
-  <div class="eyebrow">Confidential</div>
-  <p class="word">Power<span>Bee</span></p>
-  <p class="tag">Ultra efficient energy generation</p>
-  <h1>Investor deck</h1>
+  <img class="wordmark" src="assets/wordmark.png" alt="PowerBee">
+  <h1>Investor deck · Confidential</h1>
   <p class="hint">Shared by invitation only. Enter the password to continue.</p>
 
   <form id="f">
