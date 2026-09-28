@@ -128,17 +128,7 @@ const loader = `<script>
       el.setAttribute('data-media-error', '');
     });
   }
-  function watch(el) {
-    if (!('IntersectionObserver' in window)) { fill(el); return; }
-    var slide = el.closest('.slide') || el;
-    var seen = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) fill(el);
-      });
-    }, { rootMargin: '80% 0px', threshold: 0.01 });
-    seen.observe(slide);
-  }
-  document.querySelectorAll('img[data-enc], video').forEach(watch);
+  document.querySelectorAll('video, img[data-enc]').forEach(fill);
 })();
 </script>`;
 
@@ -558,7 +548,7 @@ function fitToScreen() {
     'html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }',
     'body { overflow-wrap: break-word; }',
     'img, video, canvas, iframe { max-width: 100%; height: auto; }',
-    '.duo-still, .inn-stage video { height: unset; }',
+    '.duo-still, .inn-stage video, .inn-stage svg, .evo-art img, .tl-photo img, .team-photo img, .cmp-ico img, .pat-sheet img { height: unset; }',
     'pre { overflow-x: auto; }',
     '[data-fit-scroll] { max-width: 100%; overflow-x: auto; }'
   ].join(' ');
