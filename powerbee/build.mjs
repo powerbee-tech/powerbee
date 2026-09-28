@@ -2,15 +2,18 @@
  * Encrypts content/deck.html into a self-contained index.html that asks for a
  * password and decrypts in the browser (PBKDF2-SHA256 -> AES-256-GCM).
  *
- * The published index.html contains only ciphertext, so it is safe in a public
- * repository. content/deck.html must stay out of git.
+ * Referenced content/* media are encrypted separately (AES-256-GCM) into
+ * media/<name>.enc. A random media key is injected into the HTML *before* the
+ * HTML is password-encrypted, so after unlock the deck can lazy-decrypt blobs
+ * without reading the password from sessionStorage (document.write has already
+ * destroyed the gate).
  *
  *   node powerbee/build.mjs "<password>"
  *   PAGE_PASSWORD="<password>" node powerbee/build.mjs
  */
 
 import { webcrypto as crypto } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 
 const ITERATIONS = 310000;
 
@@ -29,7 +32,123 @@ if (!password) {
   process.exit(1);
 }
 
-const plaintext = await readFile(new URL('content/deck.html', import.meta.url));
+const looksLikeMedia = (buf) => {
+  if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'PNG';
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'JPEG';
+  if (buf.length >= 12 && buf.subarray(4, 8).toString() === 'ftyp') return 'MP4';
+  return null;
+};
+
+const mediaDir = new URL('media/', import.meta.url);
+await rm(mediaDir, { recursive: true, force: true });
+await mkdir(mediaDir, { recursive: true });
+
+let html = await readFile(new URL('content/deck.html', import.meta.url), 'utf8');
+const mediaRef = /(src|poster)=["']content\/([^"'?]+)(?:\?[^"']*)?["']/g;
+const mediaFiles = [...new Set([...html.matchAll(mediaRef)].map((match) => match[2]))];
+
+const mediaKey = crypto.getRandomValues(new Uint8Array(32));
+const mediaCryptoKey = await crypto.subtle.importKey('raw', mediaKey, 'AES-GCM', false, ['encrypt']);
+
+for (const name of mediaFiles) {
+  const plain = await readFile(new URL(`content/${name}`, import.meta.url));
+  const fileIv = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: fileIv }, mediaCryptoKey, plain));
+  const packed = new Uint8Array(12 + cipher.byteLength);
+  packed.set(fileIv, 0);
+  packed.set(cipher, 12);
+  const leak = looksLikeMedia(packed);
+  if (leak) {
+    console.error(`Refusing to write media/${name}.enc — output looks like ${leak}`);
+    process.exit(1);
+  }
+  await writeFile(new URL(`${name}.enc`, mediaDir), packed);
+}
+
+html = html.replace(mediaRef, (_, attr, name) => {
+  const url = `media/${name}.enc`;
+  return attr === 'poster' ? `data-poster-enc="${url}"` : `data-enc="${url}"`;
+});
+
+const mediaKeyB64 = Buffer.from(mediaKey).toString('base64');
+const loader = `<script>
+(function () {
+  var KEY = "${mediaKeyB64}";
+  var bytes = function (b64) { return Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); }); };
+  var keyP = crypto.subtle.importKey('raw', bytes(KEY), 'AES-GCM', false, ['decrypt']);
+  var cache = Object.create(null);
+  function mimeOf(name, buf) {
+    if (/\\.mp4(\\.enc)?$/i.test(name)) return 'video/mp4';
+    if (/\\.png(\\.enc)?$/i.test(name)) return 'image/png';
+    if (/\\.jpe?g(\\.enc)?$/i.test(name)) return 'image/jpeg';
+    if (buf[0] === 0x89) return 'image/png';
+    if (buf[0] === 0xff) return 'image/jpeg';
+    return 'application/octet-stream';
+  }
+  function decrypt(url) {
+    if (cache[url]) return cache[url];
+    cache[url] = fetch(url).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      var u8 = new Uint8Array(buf);
+      return keyP.then(function (key) {
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8.subarray(0, 12) }, key, u8.subarray(12));
+      });
+    }).then(function (plain) {
+      var u8 = new Uint8Array(plain);
+      return URL.createObjectURL(new Blob([u8], { type: mimeOf(url, u8) }));
+    });
+    return cache[url];
+  }
+  function fill(el) {
+    if (el.dataset.mediaReady) return;
+    el.dataset.mediaReady = '1';
+    var poster = el.getAttribute('data-poster-enc');
+    var source = el.tagName === 'VIDEO' ? el.querySelector('[data-enc]') : el;
+    var enc = source && source.getAttribute('data-enc');
+    var jobs = [];
+    if (poster) jobs.push(decrypt(poster).then(function (url) { el.poster = url; }));
+    if (enc) {
+      jobs.push(decrypt(enc).then(function (url) {
+        if (source.tagName === 'SOURCE') {
+          source.src = url;
+          el.load();
+          if (el.hasAttribute('autoplay') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            var play = el.play();
+            if (play && play.catch) play.catch(function () {});
+          }
+        } else {
+          el.src = url;
+        }
+      }));
+    }
+    Promise.all(jobs).catch(function () {
+      delete el.dataset.mediaReady;
+      el.setAttribute('data-media-error', '');
+    });
+  }
+  function watch(el) {
+    if (!('IntersectionObserver' in window)) { fill(el); return; }
+    var slide = el.closest('.slide') || el;
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) fill(el);
+      });
+    }, { rootMargin: '80% 0px', threshold: 0.01 });
+    seen.observe(slide);
+  }
+  document.querySelectorAll('img[data-enc], video').forEach(watch);
+})();
+</script>`;
+
+if (!html.includes('</body>')) {
+  console.error('content/deck.html has no </body> — cannot inject the media loader.');
+  process.exit(1);
+}
+html = html.replace('</body>', `${loader}\n</body>`);
+
+const plaintext = new TextEncoder().encode(html);
 
 const salt = crypto.getRandomValues(new Uint8Array(16));
 const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -307,10 +426,6 @@ function render(html) {
   document.close();
   fitToScreen();
   window.addEventListener('load', containWideTables);
-  if (location.hash) {
-    const target = document.querySelector(location.hash);
-    if (target) target.scrollIntoView();
-  }
 }
 
 // document.write() replaces this page with the decrypted one, head and all, so
@@ -336,6 +451,7 @@ function fitToScreen() {
     'html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }',
     'body { overflow-wrap: break-word; }',
     'img, video, canvas, iframe { max-width: 100%; height: auto; }',
+    '.duo-still, .inn-stage video { height: unset; }',
     'pre { overflow-x: auto; }',
     '[data-fit-scroll] { max-width: 100%; overflow-x: auto; }'
   ].join(' ');
@@ -375,3 +491,4 @@ await writeFile(new URL('index.html', import.meta.url), shell);
 
 const size = (n) => `${(n / 1024).toFixed(1)} kB`;
 console.log(`powerbee/index.html written — ${size(shell.length)} (payload ${size(ciphertext.byteLength)}, ${ITERATIONS} PBKDF2 iterations)`);
+console.log(`powerbee/media/ written — ${mediaFiles.length} encrypted file${mediaFiles.length === 1 ? '' : 's'}`);

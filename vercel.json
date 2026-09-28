@@ -45,6 +45,21 @@
       "source": "/deck/:path*",
       "destination": "https://powerbee.tech/powerbee/:path*",
       "statusCode": 301
+    },
+    {
+      "source": "/powerbee-1",
+      "destination": "https://powerbee.tech/powerbee",
+      "statusCode": 301
+    },
+    {
+      "source": "/powerbee-1/",
+      "destination": "https://powerbee.tech/powerbee",
+      "statusCode": 301
+    },
+    {
+      "source": "/powerbee-1/:path*",
+      "destination": "https://powerbee.tech/powerbee/:path*",
+      "statusCode": 301
     }
   ],
   "headers": [
@@ -90,6 +105,12 @@
       "source": "/polishengine/pitch/index.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/powerbee/media/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]

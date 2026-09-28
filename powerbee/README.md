@@ -67,5 +67,12 @@ transcription error.
 - While iterating, open `content/deck.html` directly instead of rebuilding — it
   is the same markup, unencrypted.
 - `assets/` is served unencrypted, so it holds only the favicon and the link
-  preview card. Anything confidential belongs inside `content/deck.html`.
+  preview card. Anything confidential belongs inside `content/deck.html` or
+  `content/` media — never in `assets/`.
+- Photos and videos referenced as `content/…` are encrypted at build time into
+  `media/<name>.enc`. The media key lives inside the password-encrypted HTML.
+  A direct `.enc` URL returns ciphertext (HTTP 200), not a playable file.
+  Plaintext `/powerbee/content/*.mp4` is not deployed.
 - `og.png` is a screenshot of `og-template.html` at exactly 1200x630.
+- `/powerbee-1` 301s here. Rollback is a git revert of the published
+  `powerbee/index.html` and `powerbee/media/`.

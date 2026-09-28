@@ -1,8 +1,14 @@
 .DS_Store
 
+# Cursor conversation artifacts can quote the decks. Never commit them.
+.cursor/
+
 # Plaintext sources — must never be committed to a public repo. Unanchored, so
 # it covers both the document at the root and the deck in powerbee/.
 content/
+
+# Local working copy of the next deck. Promoted into powerbee/; never publish this.
+powerbee-1/
 
 # Browser-ready copy of the investor book, written by polishengine/pitch/pdf.mjs
 # next to its assets so the relative font URLs resolve. Plaintext, like content/.
