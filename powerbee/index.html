@@ -99,22 +99,14 @@ body::before {
   display: block;
   width: min(440px, 84vw);
   height: auto;
-  margin: 0 0 40px;
+  aspect-ratio: 736 / 103;
+  margin: 0 0 28px;
 }
 body.is-busy .wordmark { animation: mark-pulse 1.4s ease-in-out infinite; }
 @keyframes mark-pulse { 50% { opacity: .4; } }
 
-h1 {
-  margin: 0;
-  font-size: .62rem;
-  font-weight: 400;
-  letter-spacing: .32em;
-  text-transform: uppercase;
-  color: var(--slate);
-}
-
 .hint {
-  margin-top: 16px;
+  margin: 0;
   font-size: clamp(.62rem, .48rem + .5vw, .76rem);
   font-weight: 300;
   letter-spacing: .035em;
@@ -125,41 +117,39 @@ h1 {
 
 form {
   width: min(300px, 100%);
-  margin-top: 40px;
+  margin-top: 28px;
   display: grid;
   gap: 12px;
 }
 
-input {
+input,
+button {
   width: 100%;
-  min-height: 48px;
+  height: 48px;
+  box-sizing: border-box;
   font: inherit;
+  background: transparent;
+  border: 1px solid var(--red);
+  padding: 0 16px;
+}
+
+input {
   font-size: .92rem;
   letter-spacing: .12em;
   color: var(--white);
   text-align: center;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  padding: 14px 8px 12px;
-  transition: border-color .16s;
+  caret-color: var(--white);
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-input::placeholder { color: var(--slate); letter-spacing: .22em; text-transform: uppercase; font-size: .68rem; }
-
-input:focus { border-bottom-color: var(--red); }
-
 button {
-  min-height: 48px;
-  font: inherit;
   font-size: .68rem;
   font-weight: 600;
   letter-spacing: .28em;
   text-transform: uppercase;
   color: var(--white);
-  background: transparent;
-  border: 1px solid var(--red);
-  padding: 13px 16px;
   cursor: pointer;
   transition: background .16s, color .16s;
 }
@@ -255,12 +245,11 @@ body.is-opening .veil i {
 <span class="corner br"></span>
 
 <div class="gate">
-  <img class="wordmark" src="assets/wordmark.png" alt="PowerBee">
-  <h1>Investor deck · Confidential</h1>
+  <img class="wordmark" src="/powerbee/assets/wordmark.png" alt="PowerBee">
   <p class="hint">Shared by invitation only. Enter the password to continue.</p>
 
   <form id="f">
-    <input id="p" type="password" placeholder="Password" autocomplete="current-password" autofocus required>
+    <input id="p" type="password" aria-label="Password" autocomplete="current-password" autofocus required>
     <button id="b" type="submit">Enter</button>
     <p class="msg" id="m" role="status" aria-live="polite"></p>
   </form>
@@ -282,6 +271,7 @@ const form = document.getElementById('f');
 const input = document.getElementById('p');
 const button = document.getElementById('b');
 const msg = document.getElementById('m');
+input.focus();
 
 async function unlock(password) {
   const baseKey = await crypto.subtle.importKey(
