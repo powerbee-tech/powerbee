@@ -3,10 +3,12 @@
  * password and decrypts in the browser (PBKDF2-SHA256 -> AES-256-GCM).
  *
  * Referenced content/* media are encrypted separately (AES-256-GCM) into
- * media/<name>.enc. A random media key is injected into the HTML *before* the
- * HTML is password-encrypted, so after unlock the deck can lazy-decrypt blobs
- * without reading the password from sessionStorage (document.write has already
- * destroyed the gate).
+ * media/<key-prefix>/<name>.enc. The prefix changes every build so a CDN that
+ * cached an older .enc under Cache-Control: immutable cannot pair it with a
+ * new HTML key. The media key is injected into the HTML *before* the HTML is
+ * password-encrypted, so after unlock the deck decrypts every photo and video
+ * immediately — without reading the password from sessionStorage (document.write
+ * has already destroyed the gate).
  *
  *   node powerbee/build.mjs "<password>"
  *   PAGE_PASSWORD="<password>" node powerbee/build.mjs
@@ -48,7 +50,10 @@ const mediaRef = /(src|poster)=["']content\/([^"'?]+)(?:\?[^"']*)?["']/g;
 const mediaFiles = [...new Set([...html.matchAll(mediaRef)].map((match) => match[2]))];
 
 const mediaKey = crypto.getRandomValues(new Uint8Array(32));
+const mediaPrefix = Buffer.from(mediaKey).toString('hex').slice(0, 8);
 const mediaCryptoKey = await crypto.subtle.importKey('raw', mediaKey, 'AES-GCM', false, ['encrypt']);
+const outDir = new URL(`${mediaPrefix}/`, mediaDir);
+await mkdir(outDir, { recursive: true });
 
 for (const name of mediaFiles) {
   const plain = await readFile(new URL(`content/${name}`, import.meta.url));
@@ -59,14 +64,14 @@ for (const name of mediaFiles) {
   packed.set(cipher, 12);
   const leak = looksLikeMedia(packed);
   if (leak) {
-    console.error(`Refusing to write media/${name}.enc — output looks like ${leak}`);
+    console.error(`Refusing to write media/${mediaPrefix}/${name}.enc — output looks like ${leak}`);
     process.exit(1);
   }
-  await writeFile(new URL(`${name}.enc`, mediaDir), packed);
+  await writeFile(new URL(`${name}.enc`, outDir), packed);
 }
 
 html = html.replace(mediaRef, (_, attr, name) => {
-  const url = `media/${name}.enc`;
+  const url = `media/${mediaPrefix}/${name}.enc`;
   return attr === 'poster' ? `data-poster-enc="${url}"` : `data-enc="${url}"`;
 });
 
@@ -85,46 +90,63 @@ const loader = `<script>
     if (buf[0] === 0xff) return 'image/jpeg';
     return 'application/octet-stream';
   }
+  function resolve(rel) {
+    var path = location.pathname;
+    if (!/\\/$/.test(path)) {
+      var last = path.split('/').pop();
+      path = /\\.[a-z0-9]+$/i.test(last) ? path.replace(/[^/]+$/, '') : path + '/';
+    }
+    return path + rel;
+  }
   function decrypt(url) {
-    if (cache[url]) return cache[url];
-    cache[url] = fetch(url).then(function (r) {
-      if (!r.ok) throw new Error(String(r.status));
-      return r.arrayBuffer();
-    }).then(function (buf) {
-      var u8 = new Uint8Array(buf);
-      return keyP.then(function (key) {
-        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8.subarray(0, 12) }, key, u8.subarray(12));
+    var abs = resolve(url);
+    if (cache[abs]) return cache[abs];
+    cache[abs] = (function attempt(n) {
+      return fetch(abs).then(function (r) {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.arrayBuffer();
+      }).then(function (buf) {
+        var u8 = new Uint8Array(buf);
+        return keyP.then(function (key) {
+          return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8.subarray(0, 12) }, key, u8.subarray(12));
+        });
+      }).then(function (plain) {
+        var u8 = new Uint8Array(plain);
+        return URL.createObjectURL(new Blob([u8], { type: mimeOf(url, u8) }));
+      }).catch(function () {
+        if (n < 3) {
+          return new Promise(function (ok) { setTimeout(ok, 350 * n); }).then(function () { return attempt(n + 1); });
+        }
+        delete cache[abs];
+        throw new Error(url);
       });
-    }).then(function (plain) {
-      var u8 = new Uint8Array(plain);
-      return URL.createObjectURL(new Blob([u8], { type: mimeOf(url, u8) }));
-    });
-    return cache[url];
+    })(1);
+    return cache[abs];
+  }
+  function attach(el, source, blob) {
+    if (source.tagName === 'SOURCE') {
+      source.src = blob;
+      try { el.load(); } catch (e) {}
+      if (el.hasAttribute('autoplay') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var play = el.play();
+        if (play && play.catch) play.catch(function () {});
+      }
+    } else {
+      el.src = blob;
+    }
   }
   function fill(el) {
-    if (el.dataset.mediaReady) return;
-    el.dataset.mediaReady = '1';
+    if (el.dataset.mediaReady === '1') return;
     var poster = el.getAttribute('data-poster-enc');
     var source = el.tagName === 'VIDEO' ? el.querySelector('[data-enc]') : el;
     var enc = source && source.getAttribute('data-enc');
-    var jobs = [];
-    if (poster) jobs.push(decrypt(poster).then(function (url) { el.poster = url; }));
-    if (enc) {
-      jobs.push(decrypt(enc).then(function (url) {
-        if (source.tagName === 'SOURCE') {
-          source.src = url;
-          el.load();
-          if (el.hasAttribute('autoplay') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            var play = el.play();
-            if (play && play.catch) play.catch(function () {});
-          }
-        } else {
-          el.src = url;
-        }
-      }));
-    }
-    Promise.all(jobs).catch(function () {
-      delete el.dataset.mediaReady;
+    if (poster) decrypt(poster).then(function (url) { el.poster = url; }).catch(function () {});
+    if (!enc) return;
+    decrypt(enc).then(function (url) {
+      attach(el, source, url);
+      el.dataset.mediaReady = '1';
+      el.removeAttribute('data-media-error');
+    }).catch(function () {
       el.setAttribute('data-media-error', '');
     });
   }

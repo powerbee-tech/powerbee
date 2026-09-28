@@ -70,7 +70,8 @@ transcription error.
   preview card. Anything confidential belongs inside `content/deck.html` or
   `content/` media — never in `assets/`.
 - Photos and videos referenced as `content/…` are encrypted at build time into
-  `media/<name>.enc`. The media key lives inside the password-encrypted HTML.
+  `media/<key-prefix>/<name>.enc` so a cached ciphertext cannot outlive its key.
+  The media key lives inside the password-encrypted HTML.
   A direct `.enc` URL returns ciphertext (HTTP 200), not a playable file.
   Plaintext `/powerbee/content/*.mp4` is not deployed.
 - `og.png` is a screenshot of `og-template.html` at exactly 1200x630.
