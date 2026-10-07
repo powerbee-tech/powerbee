@@ -73,6 +73,19 @@ node powerbee/build.mjs "<password>"     # rewrites index.html
 That round trip is what makes it possible to iterate from a fresh clone, a cloud
 agent or a phone with nothing but the password.
 
+`unbuild.mjs` also answers the question a locked-out reader cannot:
+
+```sh
+node powerbee/unbuild.mjs "<password>" --check     # does this password open the page?
+node powerbee/unbuild.mjs "<password>" --history   # which past builds does it open?
+```
+
+`--check` writes nothing. `--history` tries the password against every build of
+`index.html` in git and names the newest one it opens. That is the build to
+recover the deck from when a rebuild has encrypted it with a different password:
+the ciphertext of every earlier build is still in git, and the commits after it
+say in their subjects what to re-apply.
+
 ## Relationship to the source presentation
 
 The deck is a restyled web version of `PowerBee-mini-power-generator.pdf` (18
