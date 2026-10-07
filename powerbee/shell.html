@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PowerBee &mdash; Investor Deck</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#000000">
+<link rel="canonical" href="__SITE_URL__/">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+<meta name="description" content="PowerBee investor deck. Confidential — a password is required to view this presentation.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PowerBee">
+<meta property="og:title" content="PowerBee &mdash; Investor Deck">
+<meta property="og:description" content="Confidential investor presentation. A password is required to view it.">
+<meta property="og:url" content="__SITE_URL__/">
+<meta property="og:image" content="__SITE_URL__/assets/og.png?v=2">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PowerBee — Investor Deck. Confidential, password required.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PowerBee &mdash; Investor Deck">
+<meta name="twitter:description" content="Confidential investor presentation. A password is required to view it.">
+<meta name="twitter:image" content="__SITE_URL__/assets/og.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+:root {
+  --black:   #000000;
+  --slate:   #4C5A66;
+  --white:   #F7FFFF;
+  --white-2: #E6F5F5;
+  --gray:    #AABBBD;
+  --red:     #FF073A;
+  --red-3:   #A60525;
+  --line:      rgba(76, 90, 102, .38);
+  --line-soft: rgba(76, 90, 102, .18);
+}
+
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+body {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(28px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  background: var(--black);
+  color: var(--white-2);
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 42% at 92% -6%, rgba(255, 7, 58, .08), transparent 68%),
+    radial-gradient(44% 38% at -4% 104%, rgba(166, 5, 37, .09), transparent 70%);
+}
+
+.corner {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  border-style: solid;
+  border-color: var(--red);
+  z-index: 4;
+  pointer-events: none;
+}
+.corner.tl { top: max(22px, env(safe-area-inset-top)); left: max(22px, env(safe-area-inset-left)); border-width: 2px 0 0 2px; }
+.corner.br { bottom: max(22px, env(safe-area-inset-bottom)); right: max(22px, env(safe-area-inset-right)); border-width: 0 2px 2px 0; }
+
+.gate {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: opacity .55s cubic-bezier(.22, .7, .2, 1), transform .55s cubic-bezier(.22, .7, .2, 1);
+}
+
+.wordmark {
+  display: block;
+  width: min(440px, 84vw);
+  height: auto;
+  aspect-ratio: 736 / 103;
+  margin: 0 0 28px;
+}
+body.is-busy .wordmark { animation: mark-pulse 1.4s ease-in-out infinite; }
+@keyframes mark-pulse { 50% { opacity: .4; } }
+
+.hint {
+  margin: 0;
+  font-size: clamp(.62rem, .48rem + .5vw, .76rem);
+  font-weight: 300;
+  letter-spacing: .035em;
+  line-height: 1.35;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+form {
+  width: min(300px, 100%);
+  margin-top: 28px;
+  display: grid;
+  gap: 12px;
+}
+
+input,
+button {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  font: inherit;
+  background: transparent;
+  border: 1px solid var(--red);
+  padding: 0 16px;
+}
+
+input {
+  font-size: .92rem;
+  letter-spacing: .12em;
+  color: var(--white);
+  text-align: center;
+  caret-color: var(--white);
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+button {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--white);
+  cursor: pointer;
+  transition: background .16s, color .16s;
+}
+
+button:hover { background: var(--red); }
+button:disabled { opacity: .45; cursor: default; }
+
+.msg {
+  min-height: 1.3em;
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.msg[data-busy] { color: var(--slate); }
+
+footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 3;
+  font-size: .58rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--slate);
+  text-align: center;
+  pointer-events: none;
+}
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.veil .rings {
+  position: relative;
+  width: 80px;
+  height: 40px;
+  transform: scale(0);
+}
+.veil i {
+  position: absolute;
+  top: 6px;
+  left: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.4px solid #F7FFFF;
+  background: transparent;
+}
+.veil i + i {
+  left: 38px;
+  border-color: var(--red);
+}
+
+body.is-opening .gate,
+body.is-opening footer,
+body.is-opening .corner { opacity: 0; transform: translate3d(0, -10px, 0); }
+body.is-opening .veil .rings {
+  animation: open-rings .92s cubic-bezier(.22, .68, .2, 1) forwards;
+}
+body.is-opening .veil i {
+  animation: open-fill .92s cubic-bezier(.22, .68, .2, 1) forwards;
+}
+
+@keyframes open-rings {
+  0%   { transform: rotate(0deg) scale(1); }
+  32%  { transform: rotate(130deg) scale(4.6); }
+  100% { transform: rotate(390deg) scale(86); }
+}
+@keyframes open-fill {
+  0%, 36% { background: transparent; }
+  100% { background: #000; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.is-busy .wordmark,
+  body.is-opening .veil .rings,
+  body.is-opening .veil i { animation: none; }
+  .gate, footer, .corner { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<span class="corner tl"></span>
+<span class="corner br"></span>
+
+<div class="gate">
+  <img class="wordmark" src="/powerbee/assets/wordmark.png" alt="PowerBee">
+  <p class="hint">Shared by invitation only. Enter the password to continue.</p>
+
+  <form id="f">
+    <input id="p" type="password" aria-label="Password" autocomplete="current-password" autofocus required>
+    <button id="b" type="submit">Enter</button>
+    <p class="msg" id="m" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<footer>PowerBee P.S.A. &middot; Do not forward</footer>
+<div class="veil" aria-hidden="true"><span class="rings"><i></i><i></i></span></div>
+
+<script>
+const PAYLOAD = {
+  salt: "__SALT__",
+  iv: "__IV__",
+  data: "__DATA__",
+  iterations: __ITERATIONS__
+};
+
+const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+const form = document.getElementById('f');
+const input = document.getElementById('p');
+const button = document.getElementById('b');
+const msg = document.getElementById('m');
+input.focus();
+
+async function unlock(password) {
+  const baseKey = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: bytes(PAYLOAD.salt), iterations: PAYLOAD.iterations, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: bytes(PAYLOAD.iv) }, key, bytes(PAYLOAD.data)
+  );
+  return new TextDecoder().decode(plain);
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  button.disabled = true;
+  document.body.classList.add('is-busy');
+  msg.dataset.busy = '';
+  msg.textContent = 'Opening\u2026';
+
+  try {
+    const html = await unlock(input.value);
+    sessionStorage.setItem('unlocked', input.value);
+    await render(html);
+  } catch {
+    document.body.classList.remove('is-busy');
+    delete msg.dataset.busy;
+    msg.textContent = 'Wrong password.';
+    button.disabled = false;
+    input.select();
+  }
+});
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function render(html, instant) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!instant && !reduce) {
+    document.body.classList.remove('is-busy');
+    document.body.classList.add('is-opening');
+    await wait(920);
+  }
+  document.open();
+  document.write(html);
+  document.close();
+  fitToScreen();
+  window.addEventListener('load', containWideTables);
+}
+
+// document.write() replaces this page with the decrypted one, head and all, so
+// nothing the gate declared reaches the document the reader actually ends up
+// on. Restate the mobile metrics there: a viewport for the phone to lay the
+// document out against, no text inflation on top of it, and nothing wide enough
+// to push the layout past the screen. Any of the three opens the document
+// zoomed in, with the full width a pinch away.
+function fitToScreen() {
+  const head = document.head || document.documentElement;
+
+  // A viewport that was parsed out of the written markup is inert — only
+  // inserting the element now makes the browser act on it.
+  for (const stale of document.querySelectorAll('meta[name="viewport"]')) stale.remove();
+
+  const viewport = document.createElement('meta');
+  viewport.name = 'viewport';
+  viewport.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+  head.appendChild(viewport);
+
+  const style = document.createElement('style');
+  style.textContent = [
+    'html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }',
+    'body { overflow-wrap: break-word; }',
+    'img, video, canvas, iframe { max-width: 100%; height: auto; }',
+    '.duo-still, .inn-stage video, .inn-stage svg, .evo-art img, .tl-photo img, .team-photo img, .cmp-ico img, .pat-sheet img { height: unset; }',
+    'pre { overflow-x: auto; }',
+    '[data-fit-scroll] { max-width: 100%; overflow-x: auto; }'
+  ].join(' ');
+  head.appendChild(style);
+
+  containWideTables();
+}
+
+// A table too wide for the screen widens the whole layout with it, so give it
+// its own scroll box — but only once it really does not fit, so that nothing
+// moves on a screen with room for it.
+function containWideTables() {
+  for (const table of document.querySelectorAll('table')) {
+    const parent = table.parentElement;
+    if (!parent || parent.hasAttribute('data-fit-scroll')) continue;
+    if (table.getBoundingClientRect().width <= parent.clientWidth + 1) continue;
+
+    const box = document.createElement('div');
+    box.setAttribute('data-fit-scroll', '');
+    parent.insertBefore(box, table);
+    box.appendChild(table);
+  }
+}
+
+// Stay unlocked while the tab is open.
+const remembered = sessionStorage.getItem('unlocked');
+if (remembered) {
+  unlock(remembered).then((html) => render(html, true)).catch(() => sessionStorage.removeItem('unlocked'));
+}
+</script>
+
+</body>
+</html>
