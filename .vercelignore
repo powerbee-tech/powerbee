@@ -4,6 +4,7 @@ content/
 
 # Build tooling and docs are not part of the served site. shell.html is the
 # template the published index.html is rendered from, not a page of its own.
+lib/
 build.mjs
 unbuild.mjs
 reshell.mjs

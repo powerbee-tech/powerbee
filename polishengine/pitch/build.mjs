@@ -7,6 +7,12 @@
  *
  *   node polishengine/pitch/build.mjs "<password>"
  *   PAGE_PASSWORD="<password>" node polishengine/pitch/build.mjs
+ *   node polishengine/pitch/build.mjs -           # read the password from stdin
+ *   node polishengine/pitch/build.mjs - --rotate  # and change the password
+ *
+ * A rebuild keeps the book's password: the build refuses to run unless the
+ * password opens the page it is about to replace, so a mistyped or mangled one
+ * cannot lock readers out. Changing it has to be asked for with --rotate.
  *
  * The page around the ciphertext — the gate and the slide viewer — is
  * shell.html. Changing it needs no password: see reshell.mjs.
@@ -15,15 +21,25 @@
 import { webcrypto as crypto } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 
+import { confirmWritten, keepPassword, readPassword } from '../../lib/password.mjs';
 import { renderShell } from './shell.mjs';
 
 const ITERATIONS = 310000;
 
-const password = process.argv[2] ?? process.env.PAGE_PASSWORD;
-if (!password) {
-  console.error('Password required:  node polishengine/pitch/build.mjs "<password>"');
-  process.exit(1);
-}
+const target = new URL('index.html', import.meta.url);
+const argv = process.argv.slice(2);
+
+const password = await readPassword({
+  args: argv.filter((arg) => !arg.startsWith('--')),
+  usage: 'node polishengine/pitch/build.mjs "<password>"',
+});
+
+await keepPassword({
+  published: await readFile(target, 'utf8').catch(() => null),
+  password,
+  rotate: argv.includes('--rotate'),
+  source: 'polishengine/pitch/index.html',
+});
 
 const plaintext = await readFile(new URL('content/pitch.html', import.meta.url));
 
@@ -51,7 +67,8 @@ const shell = await renderShell({
   iterations: ITERATIONS,
 });
 
-await writeFile(new URL('index.html', import.meta.url), shell);
+await writeFile(target, shell);
+await confirmWritten({ page: shell, password, source: 'polishengine/pitch/index.html' });
 
 const size = (n) => `${(n / 1024).toFixed(1)} kB`;
 console.log(`polishengine/pitch/index.html written — ${size(shell.length)} (payload ${size(ciphertext.byteLength)}, ${ITERATIONS} PBKDF2 iterations)`);

@@ -6,6 +6,7 @@
  *
  *   node polishengine/unbuild.mjs "<password>"
  *   PAGE_PASSWORD="<password>" node polishengine/unbuild.mjs
+ *   node polishengine/unbuild.mjs -  # read the password from stdin
  *
  * Refuses to overwrite an existing content/deck.html unless --force is passed.
  */
@@ -13,14 +14,12 @@
 import { webcrypto as crypto } from 'node:crypto';
 import { readFile, writeFile, access, mkdir } from 'node:fs/promises';
 
+import { readPassword } from '../lib/password.mjs';
+
 const args = process.argv.slice(2).filter((arg) => arg !== '--force');
 const force = process.argv.includes('--force');
 
-const password = args[0] ?? process.env.PAGE_PASSWORD;
-if (!password) {
-  console.error('Password required:  node polishengine/unbuild.mjs "<password>"');
-  process.exit(1);
-}
+const password = await readPassword({ args, usage: 'node polishengine/unbuild.mjs "<password>"' });
 
 const target = new URL('content/deck.html', import.meta.url);
 

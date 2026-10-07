@@ -20,7 +20,22 @@ node build.mjs "<password>"
 ```
 
 That rewrites `index.html`. Commit and push it; Vercel serves it from `main`.
-Changing the password is the same command with a new value.
+
+A rebuild keeps the password: the build refuses to run unless the password opens
+the page it is about to replace, and writes nothing when it does not. The
+ciphertext is the only copy of the document, so a build that encrypted a
+mistyped or shell-mangled password publishes a page nobody can open — which is
+what happened to the investor deck once. Changing the password has to be asked
+for with `--rotate`, and `-` reads it from stdin, where no shell can expand `$`,
+a backtick or a backslash on the way in:
+
+```sh
+printf '%s' "$PASSWORD" | node build.mjs - --rotate
+```
+
+`lib/password.mjs` holds that rule for every encrypted page in the repository:
+this one, `/powerbee`, `/polishengine` and `/polishengine/pitch`. Each page
+keeps its own password; they share only the rule.
 
 The link-preview card `assets/og.png` is a 1200x630 screenshot of
 `og-template.html`; regenerate it whenever that template changes.

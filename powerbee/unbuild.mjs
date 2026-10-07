@@ -24,7 +24,7 @@ import { webcrypto as crypto } from 'node:crypto';
 import { readFile, writeFile, access } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 
-import { readPassword } from './password.mjs';
+import { readPassword } from '../lib/password.mjs';
 
 const flags = new Set(process.argv.slice(2).filter((arg) => arg.startsWith('--')));
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));

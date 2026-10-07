@@ -16,14 +16,37 @@ node powerbee/build.mjs "<password>"
 
 That rewrites `powerbee/index.html`. Commit and push it; Vercel serves this
 directory at `/powerbee`, so it goes live on the next push to `main`, and a branch
-push gets a preview deployment first. Changing the password is the same command
-with a new value.
+push gets a preview deployment first.
 
-Pass `-` instead of the password to read it from stdin. Prefer that: an argv
+**A rebuild keeps the password.** The build refuses to run unless the password
+opens the page it is about to replace, and writes nothing when it does not:
+
+```
+This password does not open powerbee/index.html.
+
+Rebuilding with it would change that page's password. Nobody would notice until
+a reader was locked out, so nothing has been written.
+```
+
+That is not a theoretical risk. The deck was published once with a password
+nobody held, because the string the build received was not the string that was
+meant, and the deck inside the ciphertext was the only copy. Changing the
+password now has to be asked for:
+
+```sh
+node powerbee/build.mjs "<new password>" --rotate
+```
+
+Pass `-` instead of the password to read it from stdin, and prefer it: an argv
 literal has already been through the shell, which expands `$`, a backtick and a
-backslash inside double quotes, and a build that encrypted the mangled result
-looks exactly like a build that rotated the password — nobody notices until a
-reader is locked out.
+backslash inside double quotes.
+
+```sh
+printf '%s' "$PASSWORD" | node powerbee/build.mjs -
+```
+
+The rule lives in `lib/password.mjs`, which every encrypted page in the
+repository builds through.
 
 ## The gate
 
