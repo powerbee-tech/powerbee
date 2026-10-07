@@ -12,6 +12,7 @@
  *
  *   node powerbee/build.mjs "<password>"
  *   PAGE_PASSWORD="<password>" node powerbee/build.mjs
+ *   node powerbee/build.mjs -               # read the password from stdin
  *
  * The page around the ciphertext — the password gate — is shell.html. Fixing
  * the gate needs no password: see reshell.mjs.
@@ -20,15 +21,15 @@
 import { webcrypto as crypto } from 'node:crypto';
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 
+import { readPassword } from './password.mjs';
 import { renderShell } from './shell.mjs';
 
 const ITERATIONS = 310000;
 
-const password = process.argv[2] ?? process.env.PAGE_PASSWORD;
-if (!password) {
-  console.error('Password required:  node powerbee/build.mjs "<password>"');
-  process.exit(1);
-}
+const password = await readPassword({
+  args: process.argv.slice(2),
+  usage: 'node powerbee/build.mjs "<password>"',
+});
 
 const looksLikeMedia = (buf) => {
   if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'PNG';

@@ -273,40 +273,115 @@ const button = document.getElementById('b');
 const msg = document.getElementById('m');
 input.focus();
 
+// Browsers withhold crypto.subtle outside a secure context, so a deck opened
+// over plain http:// or from a saved copy cannot be decrypted at all. Say that
+// instead of blaming the password, which sends the reader hunting for another
+// one that cannot exist.
+const subtle = window.crypto && window.crypto.subtle;
+if (!subtle) {
+  button.disabled = true;
+  msg.textContent = 'Open this link over https.';
+}
+
+// Raised only when the payload itself refuses to decrypt — that is the one
+// failure the password explains. Everything else keeps its own message.
+class BadPassword extends Error {}
+
+// A password shared over chat, mail or a PDF arrives carrying characters nobody
+// typed: a newline from the copy, a non-breaking space from formatted text, a
+// zero-width character from a link preview. Try the value as entered first,
+// then the same value with those taken out. build.mjs refuses to encrypt a
+// password that carries any of them, so nothing is lost by removing them here.
+function variants(entered) {
+  const tried = [];
+  const add = (value) => { if (value && tried.indexOf(value) === -1) tried.push(value); };
+  const visible = entered.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
+                         .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+  add(entered);
+  add(visible);
+  add(visible.trim());
+  return tried.length ? tried : [entered];
+}
+
 async function unlock(password) {
-  const baseKey = await crypto.subtle.importKey(
+  const baseKey = await subtle.importKey(
     'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
   );
-  const key = await crypto.subtle.deriveKey(
+  const key = await subtle.deriveKey(
     { name: 'PBKDF2', salt: bytes(PAYLOAD.salt), iterations: PAYLOAD.iterations, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
     false,
     ['decrypt']
   );
-  const plain = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: bytes(PAYLOAD.iv) }, key, bytes(PAYLOAD.data)
-  );
+  const iv = bytes(PAYLOAD.iv);
+  const payload = bytes(PAYLOAD.data);
+
+  let plain;
+  try {
+    plain = await subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, payload);
+  } catch (error) {
+    throw new BadPassword();
+  }
   return new TextDecoder().decode(plain);
+}
+
+async function unlockEntered(entered) {
+  let wrong = null;
+  for (const candidate of variants(entered)) {
+    try {
+      const html = await unlock(candidate);
+      remember(candidate);
+      return html;
+    } catch (error) {
+      if (!(error instanceof BadPassword)) throw error;
+      wrong = error;
+    }
+  }
+  throw wrong || new BadPassword();
+}
+
+// Staying unlocked for the rest of the tab is a convenience. Private windows and
+// the in-app browsers inside mail and chat apps throw on sessionStorage; losing
+// the convenience there must not cost the reader the deck.
+function remember(password) {
+  try { sessionStorage.setItem('unlocked', password); } catch (error) {}
+}
+function recall() {
+  try { return sessionStorage.getItem('unlocked'); } catch (error) { return null; }
+}
+function forget() {
+  try { sessionStorage.removeItem('unlocked'); } catch (error) {}
+}
+
+function stopWaiting(text) {
+  document.body.classList.remove('is-busy');
+  delete msg.dataset.busy;
+  msg.textContent = text;
+  button.disabled = false;
+  input.select();
 }
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!subtle) return;
   button.disabled = true;
   document.body.classList.add('is-busy');
   msg.dataset.busy = '';
   msg.textContent = 'Opening\u2026';
 
+  let html;
   try {
-    const html = await unlock(input.value);
-    sessionStorage.setItem('unlocked', input.value);
+    html = await unlockEntered(input.value);
+  } catch (error) {
+    stopWaiting(error instanceof BadPassword ? 'Wrong password.' : 'Could not open. Reload the page.');
+    return;
+  }
+
+  try {
     await render(html);
-  } catch {
-    document.body.classList.remove('is-busy');
-    delete msg.dataset.busy;
-    msg.textContent = 'Wrong password.';
-    button.disabled = false;
-    input.select();
+  } catch (error) {
+    stopWaiting('Could not open. Reload the page.');
   }
 });
 
@@ -377,9 +452,9 @@ function containWideTables() {
 }
 
 // Stay unlocked while the tab is open.
-const remembered = sessionStorage.getItem('unlocked');
-if (remembered) {
-  unlock(remembered).then((html) => render(html, true)).catch(() => sessionStorage.removeItem('unlocked'));
+const saved = subtle && recall();
+if (saved) {
+  unlock(saved).then((html) => render(html, true)).catch(forget);
 }
 </script>
 

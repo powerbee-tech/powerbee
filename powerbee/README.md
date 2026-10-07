@@ -19,6 +19,36 @@ directory at `/powerbee`, so it goes live on the next push to `main`, and a bran
 push gets a preview deployment first. Changing the password is the same command
 with a new value.
 
+Pass `-` instead of the password to read it from stdin. Prefer that: an argv
+literal has already been through the shell, which expands `$`, a backtick and a
+backslash inside double quotes, and a build that encrypted the mangled result
+looks exactly like a build that rotated the password — nobody notices until a
+reader is locked out.
+
+## The gate
+
+The password gate is the plaintext page around the ciphertext, and it lives in
+`shell.html`. Fixing it needs no password:
+
+```sh
+node powerbee/reshell.mjs
+```
+
+That re-renders `index.html` from `shell.html` around the payload the published
+page already carries, checking that the salt, IV, ciphertext and iteration count
+come through byte for byte — so the same password opens the result and `media/`
+is untouched. Use `build.mjs` instead whenever the deck itself has changed.
+
+The gate removes zero-width characters and non-breaking spaces from what the
+reader types and trims the result, because a password that travels by chat or
+mail arrives carrying them. `build.mjs` refuses to encrypt a password that
+contains any of them, so that the two sides cannot disagree; `password.mjs`
+holds both halves of that rule.
+
+Only a payload that will not decrypt is reported as a wrong password. A missing
+secure context, storage the browser blocks and a failed render each say
+something else, so that a correct password is never reported as wrong.
+
 The deck was served at `/deck` until the directory was renamed. That address and
 everything under it 301s here in `vercel.json`, so the links already shared —
 including the `assets/og.png` a cached link preview points at — keep working.

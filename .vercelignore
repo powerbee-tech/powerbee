@@ -2,9 +2,15 @@
 # cover both the document at the root and the deck in powerbee/.
 content/
 
-# Build tooling and docs are not part of the served site.
+# Build tooling and docs are not part of the served site. shell.html is the
+# template the published index.html is rendered from, not a page of its own.
 build.mjs
 unbuild.mjs
+reshell.mjs
+shell.mjs
+shell.html
+password.mjs
+pdf.mjs
 og-template.html
 README.md
 .gitignore
